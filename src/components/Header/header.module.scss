@@ -1,1 +1,14 @@
-// TODO
+.headerContainer {
+  padding: 3rem 1rem;
+  background: var(--background);
+  
+  header {
+    max-width: 1120px;
+    height: 3rem;
+    margin: 0 auto;
+
+    a:hover {
+      cursor: pointer;
+    }
+  }
+}
