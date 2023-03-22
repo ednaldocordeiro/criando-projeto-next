@@ -1,5 +1,5 @@
 import { GetStaticProps } from 'next';
-import { ReactElement } from 'react';
+import { ReactElement, useState } from 'react';
 import { FiUser } from 'react-icons/fi';
 import { TiCalendarOutline } from 'react-icons/ti';
 
@@ -34,16 +34,30 @@ interface HomeProps {
 export default function Home({
   postsPagination: { results, next_page },
 }: HomeProps): ReactElement {
+  const [posts, setPosts] = useState(results);
   async function handleLoadMorePosts(): Promise<void> {
-    fetch('https://space-traveling-ign.cdn.prismic.io/api/v2/')
+    fetch(`${next_page}`)
       .then(res => res.json())
-      .then(data => console.log(data));
+      .then(data => {
+        const newPosts = data.results.map(result => {
+          return {
+            uid: result.uid,
+            first_publication_date: result.first_publication_date,
+            data: {
+              title: result.data.title,
+              subtitle: result.data.subtitle,
+              author: result.data.author,
+            },
+          };
+        });
+        setPosts(prevPosts => [...prevPosts, ...newPosts]);
+      });
   }
 
   return (
     <main className={commonStyles.main}>
       <div className={styles.postsContainer}>
-        {results?.map(result => (
+        {posts?.map(result => (
           <div
             className={styles.post}
             key={`${result.uid}-${result.first_publication_date}`}
@@ -86,7 +100,7 @@ export default function Home({
 export const getStaticProps: GetStaticProps = async () => {
   const prismic = getPrismicClient({});
   const postsResponse = await prismic.getByType('publication', {
-    pageSize: 10,
+    pageSize: 2,
   });
 
   const results = postsResponse.results.map(post => {
