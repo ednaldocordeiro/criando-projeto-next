@@ -7,6 +7,7 @@ import { TiCalendarOutline } from 'react-icons/ti';
 import { FiUser } from 'react-icons/fi';
 import { FaRegClock } from 'react-icons/fa';
 
+import { useRouter } from 'next/router';
 import { getPrismicClient } from '../../services/prismic';
 
 import commonStyles from '../../styles/common.module.scss';
@@ -34,6 +35,12 @@ interface PostProps {
 }
 
 export default function Post({ post }: PostProps): ReactElement {
+  const { isFallback } = useRouter();
+
+  if (isFallback) {
+    return <p>Carregando...</p>;
+  }
+
   return (
     <main className={commonStyles.main}>
       <div className={styles.banner}>
@@ -45,7 +52,7 @@ export default function Post({ post }: PostProps): ReactElement {
           <div className={commonStyles.info}>
             <span>
               <TiCalendarOutline size={20} style={{ marginRight: '.5rem' }} />
-              {post.first_publication_date}
+              <p>{post.first_publication_date}</p>
             </span>
             <span>
               <FiUser size={20} style={{ marginRight: '.5rem' }} />
@@ -94,8 +101,8 @@ export const getStaticPaths: GetStaticPaths = async () => {
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   const prismic = getPrismicClient({});
   const response = await prismic.getByUID('publication', params.slug as string);
-
-  const post: Post = {
+  const post = {
+    uid: response.uid,
     first_publication_date: format(
       new Date(response.first_publication_date),
       'd MMM YYY',
